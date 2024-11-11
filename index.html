@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ülesannete Loendaja</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      background-color: #f3f4f6;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #taskInput {
+      padding: 10px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    #addTaskBtn {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #taskList {
+      list-style: none;
+      padding: 0;
+      width: 300px;
+      max-width: 100%;
+    }
+
+    .task {
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .task.done {
+      text-decoration: line-through;
+      color: #aaa;
+      background-color: #f0f0f0;
+    }
+
+    .deleteBtn {
+      padding: 5px 10px;
+      color: white;
+      background-color: #ff4d4d;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Ülesannete Loendaja</h1>
+
+<input type="text" id="taskInput" placeholder="Lisa uus ülesanne">
+<button id="addTaskBtn">Lisa ülesanne</button>
+
+<ul id="taskList"></ul>
+
+<script>
+  // DOM elementide valimine
+  const taskInput = document.getElementById("taskInput");
+  const addTaskBtn = document.getElementById("addTaskBtn");
+  const taskList = document.getElementById("taskList");
+
+  // Laadi salvestatud ülesanded LocalStorage'st
+  document.addEventListener("DOMContentLoaded", loadTasks);
+
+  // Ülesande lisamise sündmuse kuulaja
+  addTaskBtn.addEventListener("click", addTask);
+
+  function addTask() {
+    const taskText = taskInput.value.trim();
+    if (taskText === "") return;
+
+    // Loo uus ülesande element
+    const taskItem = document.createElement("li");
+    taskItem.className = "task";
+    taskItem.innerHTML = `
+                <span>${taskText}</span>
+                <button class="deleteBtn">Kustuta</button>
+            `;
+
+    // Lisa sündmuste kuulajad
+    taskItem.querySelector("span").addEventListener("click", toggleTaskDone);
+    taskItem.querySelector(".deleteBtn").addEventListener("click", deleteTask);
+
+    // Lisa ülesanne loendisse ja salvesta LocalStorage'is
+    taskList.appendChild(taskItem);
+    saveTasks();
+
+    // Tühjenda sisestusväli
+    taskInput.value = "";
+  }
+
+  // Ülesande tehtuks märkimine
+  function toggleTaskDone(e) {
+    e.target.classList.toggle("done");
+    saveTasks();
+  }
+
+  // Ülesande kustutamine
+  function deleteTask(e) {
+    e.target.parentElement.remove();
+    saveTasks();
+  }
+
+  // Ülesannete salvestamine LocalStorage'i
+  function saveTasks() {
+    const tasks = [];
+    document.querySelectorAll(".task").forEach(task => {
+      tasks.push({
+        text: task.querySelector("span").textContent,
+        done: task.querySelector("span").classList.contains("done")
+      });
+    });
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }
+
+  // Laadi ülesanded LocalStorage'st
+  function loadTasks() {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(task => {
+      const taskItem = document.createElement("li");
+      taskItem.className = "task";
+      taskItem.innerHTML = `
+                    <span ${task.done ? 'class="done"' : ""}>${task.text}</span>
+                    <button class="deleteBtn">Kustuta</button>
+                `;
+      taskItem.querySelector("span").addEventListener("click", toggleTaskDone);
+      taskItem.querySelector(".deleteBtn").addEventListener("click", deleteTask);
+      taskList.appendChild(taskItem);
+    });
+  }
+</script>
+
+</body>
+</html>
